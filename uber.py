@@ -1,28 +1,65 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor
-import joblib
+from joblib import load
+from sklearn.preprocessing import LabelEncoder
 
 # Load the pre-trained model
-model = joblib.load('uber_model.pkl')  # Adjust the path to where your model is saved
+model = load('uber_model.pkl')
 
-# Define a function to make predictions
-def make_prediction(lat, lon, weekday, hour):
-    input_features = np.array([[lat, lon, weekday, hour]])
-    prediction = model.predict(input_features)
-    return prediction
+# Streamlit app configuration
+st.set_page_config(page_title="Uber Trip Base Predictor", layout="wide")
 
-# Streamlit app
-st.title("Uber Trip Prediction")
+# Sidebar navigation
+page = st.sidebar.selectbox("Select a Page", ["Home", "Prediction"])
 
-# Create input fields for prediction
-lat = st.slider("Latitude", min_value=-90.0, max_value=90.0, value=40.75)
-lon = st.slider("Longitude", min_value=-180.0, max_value=180.0, value=-73.95)
-weekday = st.slider("Weekday", min_value=0, max_value=6, value=0)
-hour = st.slider("Hour", min_value=0, max_value=23, value=0)
+if page == "Home":
+    # Home page content
+    st.title("Welcome to the Uber Trip Base Predictor")
+    st.write("""
+        ## About the Project
+        This application predicts the base location for Uber trips based on features like latitude, longitude, 
+        weekday, and hour of the trip. The model was trained using historical Uber trip data and can provide 
+        predictions in real-time based on user inputs.
+        
+        ### How to Use the Predictor
+        Navigate to the "Prediction" page using the sidebar. Enter the trip details, and the application will 
+        provide the predicted base location.
+    """)
 
-# Make prediction
-if st.button("Predict"):
-    prediction = make_prediction(lat, lon, weekday, hour)
-    st.write(f"Predicted Base: {prediction[0]}")
+elif page == "Prediction":
+    # Prediction page content
+    st.title("Uber Trip Base Predictor")
+    st.write("Enter the details of the Uber trip to get the predicted base location.")
+
+    # Input features
+    lat = st.number_input('Latitude', format="%.6f", key='lat_input')
+    lon = st.number_input('Longitude', format="%.6f", key='lon_input')
+    weekday = st.selectbox('Weekday', list(range(7)), key='weekday_selectbox')
+    hour = st.slider('Hour', 0, 23, key='hour_slider')
+
+    # Button to trigger prediction
+    if st.button('Predict Base'):
+        # Create input dataframe
+        input_data = pd.DataFrame({
+            'Lat': [lat],
+            'Lon': [lon],
+            'Weekday': [weekday],
+            'Hour': [hour]
+        })
+
+        
+        # Predict the base
+        prediction_encoded = model.predict(input_data)
+
+        # Ensure the prediction is an integer
+        prediction_index = int(prediction_encoded[0])
+
+        # Decode the prediction
+        base_names = ['Base1', 'Base2', 'Base3', 'Base4']  # Modify as per your actual base names
+        prediction = base_names[prediction_index]
+
+        # Display the prediction
+        st.subheader("Predicted Base Location")
+        st.write(prediction)
+
