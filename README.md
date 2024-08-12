@@ -102,4 +102,4 @@ For any questions, feel free to reach out:
 
 *This project was developed to demonstrate the capabilities of predicting base locations for Uber trips using machine learning and interactive visualizations with Streamlit.*
 
-![App Screenshot](screenshot.png)
+![App Screenshot]("C:\Users\Saravanan\Pictures\Screenshots\Screenshot (12).png")
